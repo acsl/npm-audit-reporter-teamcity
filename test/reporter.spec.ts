@@ -28,15 +28,16 @@ describe('npm audit teamcity reporter', () => {
 
   test('output matches snapshot with some vulnerabilities', () => {
     processReport(mockedTsm, defaultConfig, multipleVulnerabilities);
+    expect(mockedTsm.inspection).toHaveBeenCalledWith({
+      SEVERITY: 'ERROR',
+      file: 'module: underscore',
+      message: `Arbitrary Code Execution in underscore`,
+      typeId: defaultConfig.inspectionTypeId,
+    });
     expect(mockedTsm.inspection).toHaveBeenLastCalledWith({
-      SEVERITY: defaultConfig.inspectionSeverity,
-      file: 'module: "video.js"',
-      message: `Cross-site Scripting in video.js
-severity: moderate,
-versions: <7.14.3,
-dependency of: n/a,
-patched_versions: video.js@7.20.3,
-advisory: https://github.com/advisories/GHSA-pp7m-6j83-m7r6`,
+      SEVERITY: 'WARNING',
+      file: 'module: video.js',
+      message: `Cross-site Scripting in video.js`,
       typeId: defaultConfig.inspectionTypeId,
     });
   });

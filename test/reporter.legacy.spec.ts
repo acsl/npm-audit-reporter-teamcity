@@ -28,17 +28,16 @@ describe('npm audit teamcity reporter', () => {
 
   test('output matches snapshot with some vulnerabilities', () => {
     reporterFactory(mockedTsm, defaultConfig, multipleVulnerabilities);
+    expect(mockedTsm.inspection).toHaveBeenCalledWith({
+      SEVERITY: 'ERROR',
+      file: 'module: webpack-dev-server',
+      message: 'Missing Origin Validation',
+      typeId: defaultConfig.inspectionTypeId,
+    });
     expect(mockedTsm.inspection).toHaveBeenLastCalledWith({
-      SEVERITY: defaultConfig.inspectionSeverity,
-      file: 'module: "js-yaml"',
-      message: `Versions \`js-yaml\` prior to 3.13.0 are vulnerable to Denial of Service. By parsing a carefully-crafted YAML file, the node process stalls and may exhaust system resources leading to a Denial of Service.
-severity: moderate,
-versions: 3.12.0,
-dependency of: eslint, jest,
-vulnerable_versions: <3.13.0,
-patched_versions: >=3.13.0,
-recommendation: Upgrade to version 3.13.0.,
-advisory: https://npmjs.com/advisories/788`,
+      SEVERITY: 'WARNING',
+      file: 'module: js-yaml',
+      message: 'Denial of Service',
       typeId: defaultConfig.inspectionTypeId,
     });
   });

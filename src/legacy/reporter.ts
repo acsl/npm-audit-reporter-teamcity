@@ -16,7 +16,7 @@ function isVulnerable(auditMetadata: IAuditLegacyMetadata) {
 
 export function legacyReporter(
   tsm: API<true>,
-  { inspectionTypeId, inspectionName, inspectionCategory, inspectionSeverity }: IConfig,
+  { inspectionTypeId, inspectionName, inspectionCategory }: IConfig,
   auditResult: IAuditLegacyOutput,
 ) {
   if (isVulnerable(auditResult.metadata)) {
@@ -30,28 +30,12 @@ export function legacyReporter(
     Object.keys(auditResult.advisories).forEach((advisoryId) => {
       const advisoryElement = auditResult.advisories[advisoryId];
       debug('current element:', advisoryElement);
+      const severity = ['high', 'critical'].indexOf(advisoryElement.severity) >= 0 ? 'ERROR' : 'WARNING';
 
       tsm.inspection({
-        SEVERITY: inspectionSeverity,
-        file: `module: "${advisoryElement.module_name}"`,
-        message: `${advisoryElement.overview}
-severity: ${advisoryElement.severity},
-versions: ${advisoryElement.findings.map((f) => f.version).join(', ')},
-dependency of: ${advisoryElement.findings
-          .reduce<string[]>((acc, prev) => {
-            prev.paths.forEach((path) => {
-              const dependencyOf = path.split('>')[0];
-              if (!acc.includes(dependencyOf)) {
-                acc.push(dependencyOf);
-              }
-            });
-            return acc;
-          }, [])
-          .join(', ')},
-vulnerable_versions: ${advisoryElement.vulnerable_versions},
-patched_versions: ${advisoryElement.patched_versions},
-recommendation: ${advisoryElement.recommendation},
-advisory: ${advisoryElement.url}`,
+        SEVERITY: severity,
+        file: `module: ${advisoryElement.module_name}`,
+        message: `${advisoryElement.title}`,
         typeId: inspectionTypeId,
       });
     });

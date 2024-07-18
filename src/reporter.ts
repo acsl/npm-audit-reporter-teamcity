@@ -10,7 +10,7 @@ function isVulnerable(auditMetadata: IMetadata) {
 
 export function processReport(
   tsm: API<true>,
-  { inspectionTypeId, inspectionName, inspectionCategory, inspectionSeverity }: IConfig,
+  { inspectionTypeId, inspectionName, inspectionCategory }: IConfig,
   auditResult: IAuditOutput,
 ) {
   if (!isVulnerable(auditResult.metadata)) {
@@ -37,19 +37,12 @@ export function processReport(
     }
 
     sources.forEach((advisory) => {
+      const severity = ['high', 'critical'].indexOf(advisory.severity) >= 0 ? 'ERROR' : 'WARNING';
+
       tsm.inspection({
-        SEVERITY: inspectionSeverity,
-        file: `module: "${advisory.name}"`,
-        message: `${advisory.title}
-severity: ${advisory.severity},
-versions: ${advisory.range},
-dependency of: ${component.effects.length > 0 ? component.effects.join(', ') : 'n/a'},
-patched_versions: ${
-          typeof component.fixAvailable === 'boolean'
-            ? component.fixAvailable
-            : component.fixAvailable.name + '@' + component.fixAvailable.version
-        },
-advisory: ${advisory.url}`,
+        SEVERITY: severity,
+        file: `module: ${advisory.name}`,
+        message: `${advisory.title}`,
         typeId: inspectionTypeId,
       });
     });
